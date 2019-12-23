@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>模拟考试</title>
+</head>
+
+<style>
+    body{
+        text-align: center;
+    }
+</style>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+
+<body>
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/index" >航概SaaS</a>
+        </div>
+      </div>
+    </div>
+
+
+<h2>模拟考试</h2>
+
+<p>为了丑一点，本页面特地没有用任何css，让你习惯一下 :) </p>
+
+<p>考试一共85道题，单选1分，多选2分，所以我猜测是70个单选15个多选，具体咱也不知道</p>
+
+<p>你可以选题3次，这个页面打开就已经选好了一套题，所以你有两次换题机会。</p>
+<p>这是第<b id="set"></b>套题 <a onclick="change_set()">点我换题</a></p>
+
+
+<h3 id="clock"></h3>
+
+<div id="area" style="text-align: left;margin-left: 10%;margin-right: 10%">
+
+
+</div>
+
+<button class="btn btn-primary" onclick="submit();">提交答卷</button>
+
+
+</body>
+
+<script>
+    let start_time = new Date();
+    let d = new Date(start_time);
+    d.setMinutes(start_time.getMinutes()+30);
+    let set = 0;
+    let questions;
+    let ans = {};
+    let wrongs = [];
+    let is_art = {{ is_art }};
+
+    let the_url = "/test_set?is_art="+is_art;
+
+    function update_time(){
+        let mils = d.getTime() - new Date().getTime();
+        mils /= 1000;
+        let sec = mils % 60;
+        let min = mils / 60;
+        document.getElementById("clock").innerText = "距离考试结束还有"+parseInt(min)+"分"+parseInt(sec)+"秒";
+    }
+    setInterval(update_time,1000);
+    
+    function load_one(q,id) {
+        // add one question to screen
+        let temp = "<p>"+id+"."+q.question+"</p>";
+        if(q.image)temp += `<img src="`+q.image+`"><br>`;
+        if(q.type==1){
+            // single, using radio box
+            temp += (`<input type='radio' name='`+id+`' onclick="update_single(`+id+`,'A');"><label class="item">A. `+q.A+`</label>`);
+            temp += (`<input type='radio' name='`+id+`' onclick="update_single(`+id+`,'B');"><label class="item">B. `+q.B+`</label>`);
+            temp += (`<input type='radio' name='`+id+`' onclick="update_single(`+id+`,'C');"><label class="item">C. `+q.C+`</label>`);
+            temp += (`<input type='radio' name='`+id+`' onclick="update_single(`+id+`,'D');"><label class="item">D. `+q.D+`</label>`);
+        }
+        else if(q.type==2){
+            // multiple, using checkbox
+            temp += (`<input type='checkbox' name='`+id+`' onclick="update_mul('`+id+`');"><label class="item">A. `+q.A+`</label>`);
+            temp += (`<input type='checkbox' name='`+id+`' onclick="update_mul('`+id+`');"><label class="item">B. `+q.B+`</label>`);
+            temp += (`<input type='checkbox' name='`+id+`' onclick="update_mul('`+id+`');"><label class="item">C. `+q.C+`</label>`);
+            temp += (`<input type='checkbox' name='`+id+`' onclick="update_mul('`+id+`');"><label class="item">D. `+q.D+`</label>`);
+        }
+        let n = document.createElement('div');
+        n.innerHTML = temp;
+        document.getElementById("area").appendChild(n);
+    }
+    
+    function load_all(q) {
+        for(let i = 0;i<q.length;i++){
+            load_one(q[i],i+1);
+        }
+    }
+    
+    function change_set() {
+        if(set>=3){alert("不能再换题了！");return;}
+        set++;
+        document.getElementById("set").innerText = set;
+        $.ajax({
+            url:the_url,
+            success:res=>{
+                let html = "";
+                let temp = "";
+                console.log(res);
+                questions = res;
+                document.getElementById("area").innerHTML = `<div id="area" style="text-align: left;margin-left: 10%"></div>`;
+                load_all(res);
+                ans = {};
+            }
+        })
+
+    }
+
+    change_set();
+
+    function update_score_board(id) {
+        // check correct for #id question
+
+    }
+    
+    
+    function update_single(id,choice) {
+        ans[id] = choice;
+    }
+
+    function update_mul(id) {
+        const ele = document.getElementsByName(id);
+        const alp = "ABCD";
+        let ans_str = "";
+        for(let i = 0;i<4;i++){
+            if(ele[i].checked){ans_str+=alp[i];ans_str+="-";}
+        }
+        if(ans_str.endsWith("-")){ans_str=ans_str.slice(0,ans_str.length-1);}
+        ans[id]=ans_str;
+    }
+    function check_score() {
+        let total_score = 0;
+        for(let i = 0;i<85;i++){
+            if(ans[i+1]==questions[i].answer)total_score+=questions[i].type;
+            else{
+                wrongs.push(questions[i].id);
+            }
+        }
+        return total_score;
+    }
+
+    function submit() {
+        let msg = "";
+        for(let i = 1;i<=85;i++){
+            if(!ans[i]){msg+=i;msg+=','}
+        }
+        if(msg.endsWith(","))msg=msg.slice(0,msg.length-1);
+
+        let ok = confirm("你确定要交卷吗？没做的题还有："+msg);
+        if(!ok)return;
+        else{
+            const score = check_score();
+            alert("考试已经结束!猜猜你得了几分?");
+            alert("你得了:"+score+"分!恭喜!");
+            $.ajax({
+                url:"/wrong_api?is_art="+is_art,
+                data:{
+                    wrongs:wrongs.join()
+                },
+                success:res=>{
+                    if(res.code==200)alert("你的错题已经成功加入错题集中！");
+                    else if(res.code==403)alert("你没有登录，无法将错题加入错题集!");
+                }
+            })
+        }
+    }
+
+
+</script>
+
+
+
+</html>

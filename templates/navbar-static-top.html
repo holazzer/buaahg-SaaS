@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>航概刷题</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link href="https://cdn.bootcss.com/flat-ui/2.3.0/css/flat-ui.min.css" rel="stylesheet">
+      <link href="https://cdn.bootcss.com/flat-ui/2.3.0/css/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+      <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  </head>
+  <body>
+    <style>
+      body {
+        min-height: 500px;
+      }
+      .navbar-static-top {
+        margin-bottom: 19px;
+      }
+    </style>
+
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#" onclick="index()">航概SaaS</a>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="container">
+
+      <div class="jumbotron">
+        <h4 id="banner">Navbar example</h4>
+        <p id="plain_text">This example is a quick exercise to illustrate how the default, static and fixed to top navbar work.</p>
+          <div id="img_area"></div>
+          <div id="abcd">
+              <p id="opt-A" onclick="click_on_('A')">Option A</p>
+              <p id="opt-B" onclick="click_on_('B')">Option B</p>
+              <p id="opt-C" onclick="click_on_('C')">Option C</p>
+              <p id="opt-D" onclick="click_on_('D')">Option D</p>
+          </div>
+          <input type="number" id="start_id" value="1"/>
+          <button class="btn btn-info" id="next_btn">Next</button>
+          <p id="show_right" style="font-size: small">如果您设置，这里将会展示您的正确率</p>
+
+      </div>
+
+    </div>
+
+    <script>
+
+        let status = {
+            A:false,
+            B:false,
+            C:false,
+            D:false,
+            res:null,
+            ans:null,
+            next:1,
+            random_order:false,
+            show_single_mul:false,
+            has_done:0,
+            has_right:0,
+            show_right:false
+        };
+
+        const _add_wrong_url = "wrong"
+
+        const opt = "ABCD".split("");
+
+        const _the_url = "get_question_by_id";
+
+        let is_art = {{ is_art }};
+
+        function click_on_(id) {
+            status[id] = !status[id];
+            document.getElementById("opt-"+id).style.cssText = status[id]? "background-color:skyblue" : "";
+            console.log(status);
+        }
+        
+        function get_next_id() {
+            if(status.random_order)status.next = Math.ceil(Math.random() * 972);
+            else status.next++;
+            if(status.next>972)status.next = 1;
+        }
+        
+        function check_ans() {
+            let color = null;
+            let redflag = true;
+            for(let i = 0;i<4;i++){
+                if(status[opt[i]] == true) {
+                    if (status.ans[i]) {color = "#1abc9c";document.getElementById("opt-"+opt[i]).style.cssText = "background-color:"+color;}
+                    else{ color = "pink"; document.getElementById("opt-"+opt[i]).style.cssText = "background-color:"+color;redflag=false;}
+                }else {
+                    if(status.ans[i]){color = "honeydew"; document.getElementById("opt-"+opt[i]).style.cssText = "background-color:"+color;redflag=false;}
+                }
+            }
+            $("#plain_text").append("正确答案:"+status.res.answer);
+            status.has_done++;
+            if(redflag){status.has_right++;}else{
+                $.ajax({
+                    url:"/wrong_api",
+                    data:{
+                       wrongs:status.res.id,
+                        is_art:is_art
+                    }
+                })
+            }
+            $("#next_btn").text("Next");
+            $("#next_btn").removeAttr("onclick");
+            get_next_id();
+            $("#next_btn").attr("onclick","get_question_by_id(status.next)");
+        }
+
+        function get_question_by_id(id){
+            $.ajax({
+                url:_the_url + "?qid=" + id + "&is_art="+is_art,
+                success:res=>{
+                    console.log(res);
+                    status.res = res;
+                    $("#banner").text("");
+                    $("#img_area").html("");
+                    $("#plain_text").text( (status.show_single_mul?(res.type==1?"[单选]":"[多选]"):"")+res.id + "." + res.question);
+                    $("#opt-A").text("A." + res.A);
+                    $("#opt-B").text("B." + res.B);
+                    $("#opt-C").text("C." + res.C);
+                    $("#opt-D").text("D." + res.D);
+                    for(let i=0;i<4;i++){ document.getElementById("opt-"+opt[i]).style.cssText = ""; status[opt[i]] = null;}
+                    $("#next_btn").text("check");
+                    $("#next_btn").removeAttr("onclick");
+                    $("#next_btn").attr("onclick","check_ans()");
+                    status.ans = [res.answer.includes("A"),res.answer.includes("B"),res.answer.includes("C"),res.answer.includes("D")];
+                    if(res.image){$("#img_area").html("<img src='"+res.image+"'/>");}
+                    if(status.show_right)show_right();
+                }
+            })
+        }
+
+        function init(){
+            if(status.A){
+                status.random_order=true;
+                get_next_id();
+            }else {
+                status.next = 1;
+            }
+            if(status.B)status.show_single_mul=true;
+            if(status.C){
+                status.show_right=true;
+            }else {
+                $("#show_right").hide();
+            }
+            if(status.D){
+                let qid = Number($("#start_id").val());
+                if(qid<0||qid>972)qid=1;
+                status.next = qid;
+            }
+            $("#start_id").hide();
+            get_question_by_id(status.next);
+        }
+
+
+        function show_right(){
+            const rate = 100 * status.has_right/status.has_done;
+            let word = "已做题"+status.has_done+"道，正确"+status.has_right+"道。";
+            if(rate)word+="正确率"+rate.toString().split(".")[0]+"%";
+            $("#show_right").text(word);
+        }
+
+
+        $("#banner").text("一起学航概");
+        $("#plain_text").text("现在就开始吧！设置你的做题偏好：");
+        $("#next_btn").text("Start");
+        $("#next_btn").removeAttr("onclick");
+        $("#next_btn").attr("onclick","init()");
+        $("#opt-A").text("题号随机");
+        $("#opt-B").text("显示单选多选");
+        $("#opt-C").text("显示正确率");
+        get_next_id();
+        $("#opt-D").text("从这一题开始:");
+
+
+        function index() {
+            window.location.href = "/index";
+        }
+
+    </script>
+  </body>
+</html>

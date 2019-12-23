@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>搜索题目</title>
+</head>
+
+<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.bootcss.com/flat-ui/2.3.0/css/flat-ui.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+<style>
+    body{
+        width: 80%;
+        text-align: center;
+        margin-left: 10%;
+        margin-right: 10%;
+    }
+</style>
+
+<body>
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/index">航概SaaS</a>
+        </div>
+      </div>
+    </div>
+
+
+<h2>搜索题目</h2>
+<p>输入关键字来搜索相关题目</p><br>
+<p>诚信考试！考试期间本功能将会被关闭！</p>
+<div>
+<input id="kw" type="text" class="form-control" placeholder="关键字">
+<button class="btn btn-info" onclick="search()">搜索</button>
+</div>
+<div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>id</th>
+            <th>文理</th>
+            <th>问题</th>
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+            <th>D</th>
+            <th>答案</th>
+        </tr>
+        </thead>
+        <tbody id="table">
+
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+
+<script>
+    let kw = "";
+    let the_url = "/search_api";
+    let html = "";
+    function search() {
+        html = "";
+        kw = document.getElementById("kw").value;
+        console.log("kw:",kw);
+        if(kw=="")return;
+        $.ajax({
+            url:the_url + "?kw=" + kw,
+            success:res=>{
+                for(let i of res){
+                    html += ("<tr><td>"+i.id+"</td><td>"+(i.is_art?"文":"理")+
+                        "</td><td>"+i.question+"</td><td>"+i.A+"</td><td>"+i.B+
+                        "</td><td>"+i.C+"</td><td>"+i.D+"</td><td>"+i.answer+"</td></tr>");
+                }
+                document.getElementById("table").innerHTML = html;
+            }
+        })
+    }
+</script>
+
+
+</html>

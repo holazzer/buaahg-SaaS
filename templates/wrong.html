@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>错题</title>
+</head>
+<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.bootcss.com/flat-ui/2.3.0/css/flat-ui.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+<style>
+    body{
+        text-align: center;
+    }
+</style>
+
+<body>
+
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/index" >航概SaaS</a>
+        </div>
+      </div>
+    </div>
+
+<h2>错题复习</h2>
+<p>欢迎,{{ username }}!你的错题都在这里了。</p>
+<p>你可以点击<span style="color: deepskyblue">移除</span>按钮，把这道题从错题中移除。或者...<button class="btn btn-danger" href="#" onclick="remove_all()">全部清除</button></p>
+
+<div>
+{% for q in questions %}
+<p id="{{ q.id }}" style="text-align: left;margin-left: 10%;margin-right: 10%">{{ q.id }}.{{ q.question }}<br>A.{{ q.A }}<br>B.{{ q.B }}<br>C.{{ q.C }}<br>
+    D.{{ q.D }}<br>答案:{{ q.answer }}<button class="btn btn-primary" href="#" onclick="remove({{ q.id }})">移除</button> </p>
+{% endfor %}
+
+</div>
+
+<script>
+
+    let is_art = {{ is_art }};
+
+    function remove(id) {
+        $.ajax({
+            url:"/wrong_remove",
+            data:{
+                is_art:is_art,
+                qid:id
+            },
+            success:res=>{
+                console.log(res);
+                document.getElementById(id).remove();
+            }
+        })
+    }
+    
+    function remove_all() {
+        let r = confirm("你确定？全都会了？");
+        if(r){
+            $.ajax({
+                url:"/wrong_clear",
+                data:{is_art:is_art},
+                success:res=>{
+                    if(res.code==200)alert("清空成功");
+                    window.location.href = "/index"
+                }
+            })
+        }
+    }
+
+</script>
+
+
+</body>
+</html>

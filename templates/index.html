@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>航概SaaS</title>
+</head>
+
+
+<link href="https://cdn.bootcss.com/flat-ui/2.3.0/css/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.bootcss.com/flat-ui/2.3.0/css/flat-ui.min.css" rel="stylesheet">
+
+
+<style>
+    .mytile{
+        height: 300px;
+        width: 300px;
+        margin: auto;
+        margin-bottom: 20px;
+    }
+    .myrow{
+        display: flex;
+        flex-direction: row;
+        text-align: center
+    }
+    @media screen and (max-width:800px) {
+    .myrow{
+        flex-direction:column;
+    }
+    }
+
+</style>
+
+<body style="display: block;text-align: center;">
+
+<div class="hero-unit" style="text-align: center;">
+    <h2 >航概SaaS</h2>
+    <p>航概学习、做题、搜题、模拟考试的一站式解决方案</p>
+
+    {% if not username %}
+        <button class="btn btn-info" onclick="window.location.href='{{ login_url }}';">登录</button>
+    {% endif %}
+
+    {% if username %}
+    <p>欢迎回来，{{ username }}</p>
+    {% endif %}
+    <button class="btn btn-primary" onclick="set_art_sci()" id="is_art">文科(点击切换)</button>
+
+</div>
+
+<div class="myrow" >
+
+    <div class="tile mytile">
+        <br>
+        <a style="color: black" href="/search">
+            <img src="/static/svg/map.svg">
+            <h3>搜题</h3>
+            <p>知识薄弱？突然有疑惑？</p>
+            </a>
+    </div>
+
+
+        <div class="tile mytile">
+            <br>
+            <a style="color: black" href="#" onclick="work()">
+            <img src="/static/svg/rocket.svg">
+            <h3>刷题</h3>
+            <p>刷遍全题库，做北航最强。</p>
+            </a>
+        </div>
+
+
+    <div class="tile mytile"><br>
+        <a style="color: black; " href="#" onclick="wrong()">
+        <img src="/static/svg/dynamite.svg">
+        <h3>错题</h3>
+        <p>复习错题，一直到您满意为止。</p>
+        </a>
+    </div>
+
+
+    <div class="tile mytile">
+        <br>
+        <a style="color: black; " href="#" onclick="test()">
+        <img src="/static/svg/play.svg">
+        <h3>模拟考试</h3>
+        <p>来一场真正的较量吧!</p>
+        </a>
+    </div>
+
+
+</div>
+
+
+<footer style="flex:0 0 auto; margin-top: 100px;font-size: 20px">
+    Author & Maintainer : holazzer 北航经管学院的一个伪程序员;) <br><a href="https://github.com/holazzer">GitHub: holazzer</a>
+    <button class="btn btn-success" href="/support">支持我</button>
+    <br> 本站仅供个人学习使用
+    <br> 京ICP备：19035869 号
+
+</footer>
+</body>
+
+<script>
+
+    let is_art = true;
+
+    function set_art_sci() {
+        if(is_art){
+            is_art = false;
+            document.getElementById("is_art").innerText = "理科(点击切换)";
+        }else{
+            is_art = true;
+            document.getElementById("is_art").innerText = "文科(点击切换)";
+        }
+    }
+
+    function work() {
+        window.location.href = "/?is_art="+(is_art?1:0);
+    }
+    function test() {
+        window.location.href = "/test?is_art=" + (is_art ? 1 : 0);
+    }
+    function wrong() {
+        window.location.href = "/wrong?is_art="+(is_art?1:0);
+    }
+
+
+</script>
+
+</html>

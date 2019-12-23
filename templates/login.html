@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>登录</title>
+</head>
+
+<style>
+    .container{
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+</style>
+
+<link href="https://cdn.bootcss.com/flat-ui/2.3.0/css/flat-ui.min.css" rel="stylesheet">
+
+
+<body style="text-align: center;">
+<div class="container">
+<h2> 登录 or 注册 </h2>
+<p>如果你之前没有注册过，那么会自动帮你注册。如果你注册失败，说明你的名字和人家重了。尽量像一个不会重的名字哦，比如自己的学号加上什么东西。</p>
+
+<input id="name" class="form-control" type="text" placeholder="Name">
+<br>
+<input id="pwd" type="password" class="form-control" placeholder="password">
+<br>
+<button class="btn btn-info" onclick="login()">登录/注册</button>
+
+
+</div>
+
+<script>
+    let name = "";
+    let pwd = "";
+    function login() {
+        name = document.getElementById("name").value;
+        pwd = document.getElementById("pwd").value;
+        if(name!=""&&pwd!=""){
+            document.location.href = "/login?name="+name+"&pwd="+pwd;
+        }
+    }
+
+</script>
+
+
+</body>
+
+
+
+</html>
